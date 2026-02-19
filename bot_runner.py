@@ -69,6 +69,9 @@ log_signal([
     ""
 ])
 
+def run_bot():
+
+    alert_active = False
 
 # =========================
 # MAIN LOOP

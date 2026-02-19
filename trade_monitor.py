@@ -67,12 +67,12 @@ def check_trades():
 
     print(f"📊 Current BTC: {current_price}")
 
+def run_monitor():
+    while True:
+        try:
+            check_trades()
+            time.sleep(60)
+        except Exception as e:
+            print("Error:", e)
+            time.sleep(60)
 
-while True:
-    try:
-        check_trades()
-        time.sleep(60)
-
-    except Exception as e:
-        print("Error:", e)
-        time.sleep(60)
