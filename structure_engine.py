@@ -141,3 +141,43 @@ def detect_bullish_continuation(df):
         }
 
     return None
+
+def project_trade_levels(df_1h, bias):
+
+    if "structure" not in df_1h.columns:
+        return None, None, None, None
+
+    swings = df_1h[df_1h["structure"].isin(["HH", "LH", "HL", "LL"])]
+
+    if len(swings) < 2:
+        return None, None, None, None
+
+    last_high = swings[swings["structure"].isin(["HH", "LH"])].tail(1)
+    last_low = swings[swings["structure"].isin(["HL", "LL"])].tail(1)
+
+    if last_high.empty or last_low.empty:
+        return None, None, None, None
+
+    high_price = last_high["high"].iloc[-1]
+    low_price = last_low["low"].iloc[-1]
+
+    if bias == "Bearish":
+        entry = low_price
+        stop_loss = high_price
+        risk = stop_loss - entry
+        take_profit = entry - (risk * 2)
+
+    elif bias == "Bullish":
+        entry = high_price
+        stop_loss = low_price
+        risk = entry - stop_loss
+        take_profit = entry + (risk * 2)
+
+    else:
+        return None, None, None, None
+
+    rr = round(abs((take_profit - entry) / (entry - stop_loss)), 2)
+
+    return entry, stop_loss, take_profit, rr
+
+

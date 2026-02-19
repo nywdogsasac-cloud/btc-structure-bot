@@ -3,6 +3,8 @@ import os
 import requests
 from datetime import datetime
 from dotenv import load_dotenv
+from structure_engine import project_trade_levels
+from trade_logger import log_signal
 
 load_dotenv()
 
@@ -50,6 +52,24 @@ send_telegram_alert("🚀 BTC Structure Bot is now running 24/7")
 
 alert_active = False
 
+market_price = df_1h["close"].iloc[-1]
+
+log_signal([
+    datetime.now(),
+    bias,
+    score,
+    entry,
+    stop,
+    tp,
+    rr,
+    market_price,
+    "1H",
+    "OPEN",
+    "",
+    ""
+])
+
+
 # =========================
 # MAIN LOOP
 # =========================
@@ -79,24 +99,27 @@ while True:
             volume_boost
         )
 
+        entry, sl, tp, rr = project_trade_levels(df_1h, bias)
+
         print(f"📊 Bias: {bias} | Score: {score}")
 
         # =========================
         # ALERT LOGIC (Score >= 3)
         # =========================
-        if score >= 3 and not alert_active:
+        if score >= 3 and not alert_active and entry:
 
             message = f"""
-🚨 *BTC TRADE SIGNAL* 🚨
+🚨 BTC TRADE SIGNAL 🚨
 
-📈 4H Bias: *{bias}*
-🔄 1H Alignment: *{alignment}*
-🔥 Trade Score: *{score}/6*
+📈 Bias: {bias}
+🔥 Score: {score}/6
 
-Check dashboard for possible entry.
-Time: {datetime.now().strftime('%Y-%m-%d %H:%M')}
+📍 Entry: {round(entry,2)}
+🛑 Stop Loss: {round(sl,2)}
+🎯 Take Profit: {round(tp,2)}
+📊 RR: {rr}
+
 """
-
             send_telegram_alert(message)
             alert_active = True
 
